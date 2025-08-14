@@ -33,129 +33,50 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 import Footer from "@/components/global/footer"
+import { fetchHostelsData } from "@/lib/actions/api"
 
-const hostels = [
-  {
-    id: "gurukul-heights",
-    name: "Gurukul Heights",
-    location: "Kota",
-    state: "Rajasthan",
-    priceRange: "₹8,000",
-    minPrice: 8000,
-    maxPrice: 12000,
-    image: "/images/room.jpg",
-    features: ["AC Rooms", "Study Hall", "Veg Meals", "Meditation Hall", "WiFi", "Security", "Library"],
-    courseTypes: ["JEE", "NEET"],
-    rating: 4.8,
-    popular: true,
-    occupancy: 85,
-    established: 2018,
-    capacity: 200,
-    gender: "Co-ed",
-    hostelType: "Premium",
-    distance: 0.5, // km from city center
-  },
-  {
-    id: "tapasya-block",
-    name: "Tapasya Block",
-    location: "Delhi",
-    state: "Delhi",
-    priceRange: "₹10,000",
-    minPrice: 10000,
-    maxPrice: 15000,
-    image: "/images/room.jpg",
-    features: ["AC Rooms", "Library", "Gym", "WiFi", "Cafeteria", "Security", "Study Pods"],
-    courseTypes: ["CA", "JEE"],
-    rating: 4.9,
-    popular: false,
-    occupancy: 92,
-    established: 2019,
-    capacity: 150,
-    gender: "Boys Only",
-    hostelType: "Luxury",
-    distance: 1.2,
-  },
-  {
-    id: "vidya-vihar",
-    name: "Vidya Vihar",
-    location: "Pune",
-    state: "Maharashtra",
-    priceRange: "₹7,500",
-    minPrice: 7500,
-    maxPrice: 11000,
-    image: "/images/room.jpg",
-    features: ["Study Pods", "Veg Meals", "Yoga Hall", "WiFi", "AC Rooms", "Security", "Meditation Hall"],
-    courseTypes: ["NEET", "CA"],
-    rating: 4.7,
-    popular: false,
-    occupancy: 78,
-    established: 2020,
-    capacity: 180,
-    gender: "Girls Only",
-    hostelType: "Standard",
-    distance: 2.1,
-  },
-  {
-    id: "sadhana-residency",
-    name: "Sadhana Residency",
-    location: "Bangalore",
-    state: "Karnataka",
-    priceRange: "₹9,000",
-    minPrice: 9000,
-    maxPrice: 14000,
-    image: "/images/room.jpg",
-    features: ["AC Rooms", "Co-working", "Cafeteria", "Sports", "Security", "WiFi", "Library"],
-    courseTypes: ["JEE", "NEET", "CA"],
-    rating: 4.6,
-    popular: false,
-    occupancy: 88,
-    established: 2017,
-    capacity: 220,
-    gender: "Co-ed",
-    hostelType: "Premium",
-    distance: 3.5,
-  },
-  {
-    id: "gyan-kunj",
-    name: "Gyan Kunj",
-    location: "Hyderabad",
-    state: "Telangana",
-    priceRange: "₹8,500",
-    minPrice: 8500,
-    maxPrice: 13000,
-    image: "/images/room.jpg",
-    features: ["Library", "Meditation", "Veg Meals", "Study Hall", "WiFi", "AC Rooms", "Gym"],
-    courseTypes: ["NEET", "CA"],
-    rating: 4.8,
-    popular: false,
-    occupancy: 81,
-    established: 2019,
-    capacity: 160,
-    gender: "Girls Only",
-    hostelType: "Standard",
-    distance: 1.8,
-  },
-  {
-    id: "shiksha-bhawan",
-    name: "Shiksha Bhawan",
-    location: "Chennai",
-    state: "Tamil Nadu",
-    priceRange: "₹7,000",
-    minPrice: 7000,
-    maxPrice: 10500,
-    image: "/images/room.jpg",
-    features: ["WiFi", "Study Pods", "Gym", "Cafeteria", "Security", "Veg Meals"],
-    courseTypes: ["JEE", "NEET"],
-    rating: 4.5,
-    popular: false,
-    occupancy: 75,
-    established: 2020,
-    capacity: 140,
-    gender: "Boys Only",
-    hostelType: "Standard",
-    distance: 4.2,
-  },
-]
+export interface IHostel  {
+    // Old fields
+    _id: string;
+    name: string;
+    location: string;
+    locationLink?: string;
+    totalRemainingBeds?: number;
+    hostelPrice?: number;
+    nearby1?: string;
+    nearby1distance?: string;
+    nearby2?: string;
+    nearby2distance?: string;
+    nearby3?: string;
+    nearby3distance?: string;
+
+    // New fields
+    state?: string;
+    price?: number;
+    minPrice?: number;
+    maxPrice?: number;
+    features?: string[];
+    rating?: number;
+    popular?: boolean;
+    occupancy?: number;
+    established?: number;
+    capacity?: number;
+    gender?: string;
+    hostelType?: string;
+    distance?: number;
+    description?: string;
+    roomTypes?: {
+        type: string;
+        price: string;
+        icon?: string;
+    }[];
+    facilities?: {
+        name: string;
+        icon?: string;
+    }[];
+    gallery?: string[];
+    usps?: string[];
+}
 
 const facilityIcons = {
   "AC Rooms": Wind,
@@ -175,10 +96,11 @@ const facilityIcons = {
 }
 
 export default function HostelsPage() {
-  const [filteredHostels, setFilteredHostels] = useState(hostels)
+   const [hostels, setHostels] = useState<IHostel[]>([]) // State to hold all hostels data
+  const [filteredHostels, setFilteredHostels] = useState<IHostel[]>([])
+ 
   const [filters, setFilters] = useState({
     city: "all",
-    course: "all",
     gender: "all",
     hostelType: "all",
     priceRange: [7000, 15000],
@@ -200,15 +122,21 @@ export default function HostelsPage() {
     return () => window.removeEventListener("mousemove", handleMouseMove)
   }, [])
 
+  useEffect(()=>{
+    // fetching hostels data from an API or database can be done here
+    async function fetchHostels() {
+      const response = await  fetchHostelsData();
+      setHostels(response);
+      setFilteredHostels(response);
+    }
+    fetchHostels();
+  },[])
+
   const applyFilters = () => {
-    let filtered = [...hostels]
+    let filtered = [...hostels] // Create a copy of the hostels array
 
     if (filters.city !== "all") {
-      filtered = filtered.filter((hostel) => hostel.location.toLowerCase() === filters.city.toLowerCase())
-    }
-
-    if (filters.course !== "all") {
-      filtered = filtered.filter((hostel) => hostel.courseTypes.includes(filters.course))
+      filtered = filtered.filter((hostel) => hostel.location?.toLowerCase() === filters.city.toLowerCase())
     }
 
     if (filters.gender !== "all") {
@@ -220,32 +148,36 @@ export default function HostelsPage() {
     }
 
     filtered = filtered.filter(
-      (hostel) => hostel.minPrice >= filters.priceRange[0] && hostel.maxPrice <= filters.priceRange[1],
+      (hostel) => 
+        (hostel.minPrice || 0) >= filters.priceRange[0] && 
+        (hostel.maxPrice || 0) <= filters.priceRange[1],
     )
 
     if (filters.rating > 0) {
-      filtered = filtered.filter((hostel) => hostel.rating >= filters.rating)
+      filtered = filtered.filter((hostel) => (hostel.rating || 0) >= filters.rating)
     }
 
     if (filters.facilities.length > 0) {
-      filtered = filtered.filter((hostel) => filters.facilities.every((facility) => hostel.features.includes(facility)))
+      filtered = filtered.filter((hostel) => 
+        filters.facilities.every((facility) => hostel.features?.includes(facility))
+      )
     }
 
     switch (filters.sortBy) {
       case "price-low":
-        filtered.sort((a, b) => a.minPrice - b.minPrice)
+        filtered.sort((a, b) => (a.minPrice || 0) - (b.minPrice || 0))
         break
       case "price-high":
-        filtered.sort((a, b) => b.minPrice - a.minPrice)
+        filtered.sort((a, b) => (b.minPrice || 0) - (a.minPrice || 0))
         break
       case "rating":
-        filtered.sort((a, b) => b.rating - a.rating)
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0))
         break
       case "popular":
-        filtered.sort((a, b) => b.occupancy - a.occupancy)
+        filtered.sort((a, b) => (b.occupancy || 0) - (a.occupancy || 0))
         break
       case "newest":
-        filtered.sort((a, b) => b.established - a.established)
+        filtered.sort((a, b) => (b.established || 0) - (a.established || 0))
         break
     }
 
@@ -272,7 +204,6 @@ export default function HostelsPage() {
   const clearFilters = () => {
     setFilters({
       city: "all",
-      course: "all",
       gender: "all",
       hostelType: "all",
       priceRange: [7000, 15000],
@@ -282,7 +213,7 @@ export default function HostelsPage() {
     })
   }
 
-  const allFacilities = Array.from(new Set(hostels.flatMap((h) => h.features))).sort()
+  const allFacilities = Array.from(new Set(hostels.flatMap((h) => h.features || []))).sort()
 
   return (
     <div className="min-h-screen bg-[#f7f3e9] overflow-hidden">
@@ -528,7 +459,7 @@ export default function HostelsPage() {
                   className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 text-center border border-[#204735]/20 shadow-lg"
                 >
                   <div className="text-2xl mb-1">🏠</div>
-                  <div className="text-2xl font-bold text-[#589a44]">{filteredHostels.length}</div>
+                  <div className="text-2xl font-bold text-[#589a44]">{filteredHostels?.length}</div>
                   <div className="text-xs text-[#4a3728]/60 font-medium">Available</div>
                 </motion.div>
                 <motion.div
@@ -640,17 +571,7 @@ export default function HostelsPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={filters.course} onValueChange={(value) => updateFilter("course", value)}>
-                <SelectTrigger className="w-48 border-2 border-[#204735]/30 focus:border-[#589a44] rounded-2xl bg-white/50 backdrop-blur-sm">
-                  <SelectValue placeholder="Course Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Courses</SelectItem>
-                  <SelectItem value="JEE">JEE</SelectItem>
-                  <SelectItem value="NEET">NEET</SelectItem>
-                  <SelectItem value="CA">CA</SelectItem>
-                </SelectContent>
-              </Select>
+           
 
               <Select value={filters.sortBy} onValueChange={(value) => updateFilter("sortBy", value)}>
                 <SelectTrigger className="w-48 border-2 border-[#81b29a]/30 focus:border-[#589a44] rounded-2xl bg-white/50 backdrop-blur-sm">
@@ -827,7 +748,7 @@ export default function HostelsPage() {
       {/* Enhanced Hostels Grid */}
       <div id="hostels-grid" className="max-w-6xl mx-auto px-4 py-16">
         <AnimatePresence mode="wait">
-          {filteredHostels.length > 0 ? (
+          {filteredHostels?.length > 0 ? (
             <motion.div
               key="hostels-grid"
               initial={{ opacity: 0 }}
@@ -835,9 +756,9 @@ export default function HostelsPage() {
               exit={{ opacity: 0 }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
             >
-              {filteredHostels.map((hostel, index) => (
+              {filteredHostels?.map((hostel, index) => (
                 <motion.div
-                  key={hostel.id}
+                  key={hostel._id}
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -847,7 +768,7 @@ export default function HostelsPage() {
                   <Card className="group overflow-hidden border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 bg-white rounded-3xl h-full">
                     <div className="relative overflow-hidden">
                       <Image
-                        src={hostel.image || "/placeholder.svg"}
+                        src={hostel.gallery&&hostel.gallery[0] || "/placeholder.svg"}
                         alt={hostel.name}
                         width={400}
                         height={300}
@@ -911,12 +832,12 @@ export default function HostelsPage() {
                       </div>
 
                       <div className="text-3xl font-bold text-[#589a44] mb-6">
-                        {hostel.priceRange}
+                        {hostel.price}
                         <span className="text-sm font-normal text-[#4a3728]/60">/month</span>
                       </div>
 
                       <div className="flex flex-wrap gap-2 mb-6">
-                        {hostel.features.slice(0, 4).map((feature) => {
+                        {hostel.features&&hostel.features.slice(0, 4).map((feature) => {
                           const IconComponent = facilityIcons[feature as keyof typeof facilityIcons] || XCircle
                           return (
                             <Badge
@@ -929,26 +850,17 @@ export default function HostelsPage() {
                             </Badge>
                           )
                         })}
-                        {hostel.features.length > 4 && (
+                        {hostel.features&&hostel.features.length > 4 && (
                           <Badge variant="secondary" className="text-xs bg-[#81b29a]/20 text-[#4a3728]">
                             +{hostel.features.length - 4} more
                           </Badge>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap gap-2 mb-8">
-                        {hostel.courseTypes.map((course) => (
-                          <Badge
-                            key={course}
-                            className="bg-[#4a3728] text-white hover:bg-[#4a3728]/80 transition-colors"
-                          >
-                            {course}
-                          </Badge>
-                        ))}
-                      </div>
+
 
                       <div className="flex space-x-3 items-center">
-                        <Link href={`/hostels/${hostel.id}`} className="flex-1">
+                        <Link href={`/hostels/${hostel._id}`} className="flex-1">
                           <Button className="w-full bg-gradient-to-r from-[#589a44] to-[#204735] hover:from-[#589a44] hover:to-[#204735] text-white transition-all duration-300 rounded-2xl font-semibold py-6 text-lg shadow-lg hover:shadow-xl">
                             View Details
                           </Button>

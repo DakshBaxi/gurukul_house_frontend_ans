@@ -25,6 +25,8 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 import Footer from "@/components/global/footer"
+import { IHostel } from "./hostels/page"
+import { fetchHostelsData } from "@/lib/actions/api"
 
 const features = [
   {
@@ -91,38 +93,38 @@ const stats = [
   { number: "4.8", label: "Expected Rating", icon: "⭐" },
 ]
 
-const featuredHostels = [
-  {
-    id: "gurukul-heights",
-    name: "Gurukul Heights",
-    location: "Kota",
-    price: "₹8,000",
-    rating: 4.8,
-    image: "/images/room.jpg",
-    features: ["AC Rooms", "Study Hall", "Meditation"],
-    popular: true,
-  },
-  {
-    id: "tapasya-block",
-    name: "Tapasya Block",
-    location: "Delhi",
-    price: "₹10,000",
-    rating: 4.9,
-    image: "/images/room.jpg",
-    features: ["Library", "Gym", "WiFi"],
-    popular: false,
-  },
-  {
-    id: "vidya-vihar",
-    name: "Vidya Vihar",
-    location: "Pune",
-    price: "₹7,500",
-    rating: 4.7,
-    image: "/images/room.jpg",
-    features: ["Study Pods", "Yoga Hall", "Veg Meals"],
-    popular: false,
-  },
-]
+// const featuredHostels = [
+//   {
+//     id: "gurukul-heights",
+//     name: "Gurukul Heights",
+//     location: "Kota",
+//     price: "₹8,000",
+//     rating: 4.8,
+//     image: "/images/room.jpg",
+//     features: ["AC Rooms", "Study Hall", "Meditation"],
+//     popular: true,
+//   },
+//   {
+//     id: "tapasya-block",
+//     name: "Tapasya Block",
+//     location: "Delhi",
+//     price: "₹10,000",
+//     rating: 4.9,
+//     image: "/images/room.jpg",
+//     features: ["Library", "Gym", "WiFi"],
+//     popular: false,
+//   },
+//   {
+//     id: "vidya-vihar",
+//     name: "Vidya Vihar",
+//     location: "Pune",
+//     price: "₹7,500",
+//     rating: 4.7,
+//     image: "/images/room.jpg",
+//     features: ["Study Pods", "Yoga Hall", "Veg Meals"],
+//     popular: false,
+//   },
+// ]
 
 const faqs = [
   {
@@ -172,6 +174,22 @@ export default function HomePage() {
   const { scrollY } = useScroll()
   const y1 = useTransform(scrollY, [0, 300], [0, -50])
   const y2 = useTransform(scrollY, [0, 300], [0, 50])
+  const [featuredHostels, setFeaturedHostels] = useState<IHostel[]|null>();
+
+  useEffect(() => {
+    const fetchFeaturedHostels = async () => {
+      try {
+       
+      const response = await fetchHostelsData();
+        const hostels = response.slice(0,3);
+        setFeaturedHostels(hostels);
+        
+      } catch (error) {
+        console.error("Error fetching featured hostels:", error);
+      }
+    }
+    fetchFeaturedHostels();
+}, [])
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -412,9 +430,9 @@ export default function HomePage() {
 
             <div className="lg:col-span-7">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {featuredHostels.map((hostel, index) => (
+                {featuredHostels?.map((hostel, index) => (
                   <motion.div
-                    key={hostel.id}
+                    key={hostel._id}
                     initial={{ opacity: 0, y: 50 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -425,7 +443,7 @@ export default function HomePage() {
                     <Card className="group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-white rounded-3xl">
                       <div className="relative overflow-hidden">
                         <Image
-                          src={hostel.image || "/placeholder.svg"}
+                          src={hostel.gallery&&hostel?.gallery[0] || "/placeholder.svg"}
                           alt={hostel.name}
                           width={400}
                           height={300}
@@ -456,13 +474,13 @@ export default function HomePage() {
                           <span className="text-sm font-normal text-[#4a3728]/60">/month</span>
                         </div>
                         <div className="flex flex-wrap gap-2 mb-4">
-                          {hostel.features.map((feature) => (
+                          {hostel?.features?.map((feature) => (
                             <Badge key={feature} variant="secondary" className="text-xs bg-[#81b29a]/20 text-[#4a3728]">
                               {feature}
                             </Badge>
                           ))}
                         </div>
-                        <Link href={`/hostels/${hostel.id}`}>
+                        <Link href={`/hostels/${hostel._id}`}>
                           <Button className="w-full bg-[#4a3728] text-white hover:bg-[#589a44] transition-all duration-300 rounded-xl">
                             View Details
                           </Button>
