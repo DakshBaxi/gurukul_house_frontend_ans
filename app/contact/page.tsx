@@ -78,9 +78,9 @@ export default function ContactPage() {
             <Link href="/hostels" className="text-[#4a3728] hover:text-[#589a44] transition-colors text-sm font-medium">
               Hostels
             </Link>
-            <Link href="/about" className="text-[#4a3728] hover:text-[#589a44] transition-colors text-sm font-medium">
+            {/* <Link href="/about" className="text-[#4a3728] hover:text-[#589a44] transition-colors text-sm font-medium">
               About
-            </Link>
+            </Link> */}
           </div>
           <Link href="/hostels">
             <Button size="sm" className="bg-[#589a44] hover:bg-[#204735] text-white rounded-full px-6">

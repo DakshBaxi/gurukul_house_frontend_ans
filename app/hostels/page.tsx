@@ -98,7 +98,7 @@ const facilityIcons = {
 export default function HostelsPage() {
    const [hostels, setHostels] = useState<IHostel[]>([]) // State to hold all hostels data
   const [filteredHostels, setFilteredHostels] = useState<IHostel[]>([])
- 
+  const [loading, setLoading] = useState(true) // State to manage loading state
   const [filters, setFilters] = useState({
     city: "all",
     gender: "all",
@@ -123,6 +123,7 @@ export default function HostelsPage() {
   }, [])
 
   useEffect(()=>{
+    setLoading(true);
     // fetching hostels data from an API or database can be done here
     async function fetchHostels() {
       const response = await  fetchHostelsData();
@@ -130,6 +131,7 @@ export default function HostelsPage() {
       setFilteredHostels(response);
     }
     fetchHostels();
+    setLoading(false);
   },[])
 
   const applyFilters = () => {
@@ -214,7 +216,18 @@ export default function HostelsPage() {
   }
 
   const allFacilities = Array.from(new Set(hostels.flatMap((h) => h.features || []))).sort()
-
+  if (loading|| !hostels) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#f7f3e9]">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-16 h-16 border-4 border-[#589a44] border-t-transparent rounded-full mb-4"
+        />
+        <p className="text-[#4a3728] font-medium">Loading hostel details...</p>
+      </div>
+    )
+  }
   return (
     <div className="min-h-screen bg-[#f7f3e9] overflow-hidden">
       {/* Floating Navigation */}
@@ -237,9 +250,9 @@ export default function HostelsPage() {
             <Link href="/hostels" className="text-[#589a44] text-sm font-medium">
               Hostels
             </Link>
-            <Link href="/about" className="text-[#4a3728] hover:text-[#589a44] transition-colors text-sm font-medium">
+            {/* <Link href="/about" className="text-[#4a3728] hover:text-[#589a44] transition-colors text-sm font-medium">
               About
-            </Link>
+            </Link> */}
           </div>
           <Link href="/">
             <Button size="sm" className="bg-[#589a44] hover:bg-[#204735] text-white rounded-full px-6">

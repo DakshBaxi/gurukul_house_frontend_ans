@@ -34,9 +34,9 @@ const Footer = (props: Props) => {
                 <Link href="/hostels" className="block text-white/70 hover:text-[#589a44] transition-colors">
                   Hostels
                 </Link>
-                <Link href="/about" className="block text-white/70 hover:text-[#589a44] transition-colors">
+                {/* <Link href="/about" className="block text-white/70 hover:text-[#589a44] transition-colors">
                   About Us
-                </Link>
+                </Link> */}
                 <Link href="/contact" className="block text-white/70 hover:text-[#589a44] transition-colors">
                   Contact
                 </Link>
